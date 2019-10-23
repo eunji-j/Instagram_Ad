@@ -33,6 +33,8 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'accounts',
     'posts',
+    'imagekit',
+    'bootstrap4',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -123,4 +125,5 @@ STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'accounts.User' # 'auth.User'
 
-adsf = "asdfasdfasdf"
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

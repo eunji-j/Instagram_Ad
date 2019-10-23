@@ -1,6 +1,71 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
+from .forms import PostForm
+from .models import HashTag, Post, Comment
+from django.contrib.auth.decorators import login_required
+
 
 # Create your views here.
-
 def index(request):
-    return render(request, 'posts/index.html')
+    posts = Post.objects.all()
+    context = {
+        'posts': posts
+    }
+    return render(request, 'posts/index.html', context)
+
+@login_required
+def create(request):
+    if request.method == 'POST':
+        # 이미지파일은 request.FILES안에 들어있다.
+        form = PostForm(request.POST, request.FILES)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.user = request.user
+            # post object (None) 상태
+            post.save()
+            # post object 생성된 상태 -> 해시태그 추가
+            for word in post.content.split():
+                if word.startswith('#'): # word[0] == '#'과 동일
+                    # get_or_create() 해당객체가 있으면 가져오고 없으면 생성한다.
+                    # hashtag, created = HashTag.objects.get_or_create(content=word) # (obj, True or False) 튜플 반환
+                    hashtag = HashTag.objects.get_or_create(content=word)[0] # obj만 가져오겠다.
+                    post.hashtags.add(hashtag)
+            return redirect(request.GET.get('next') or 'posts:index')
+    else:
+        form = PostForm()
+    context = {
+        'form': form
+    }
+    return render(request, 'posts/form.html', context)
+
+def hashtags(request, id):
+    hashtag = get_object_or_404(HashTag, id=id)
+    posts = hashtag.taged_post.all
+    context = {
+        'posts': posts
+    }
+    return render(request, 'posts/index.html', context)
+
+@login_required
+def like(request, id):
+    post = get_object_or_404(Post, id=id)
+    user = request.user
+    if user in post.like_users.all():
+        post.like_users.remove(user)
+    else:
+        post.like_users.add(user)
+    return redirect(request.GET.get('next') or 'posts:index')
+
+@login_required
+def delete(request, id):
+    post = get_object_or_404(Post, id=id)
+    post.delete()
+    return redirect('posts:index')
+
+@login_required
+def comment_create(request, id):
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        post = get_object_or_404(Post, id=id)
+        user = request.user
+        Comment.objects.create(user=user, post=post, content=content)
+    return redirect('posts:index')

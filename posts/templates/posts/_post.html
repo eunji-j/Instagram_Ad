@@ -1,0 +1,76 @@
+<!-- 만들어놓은 make_link모듈을 불러온다. -->
+{% load make_link %} 
+
+<div class="card m-3" style="border: 0px; width: 30%;">
+  <button style="position: relative;" type="button" class="btn" data-toggle="modal" data-target=".bd-example-modal-lg{{post.id}}">
+    <img id="post" class="img-responsive" src="{{post.image.url}}" class="card-img-top" onmouseover="this.style.opacity='0.4';" onmouseout="this.style.opacity='1'" alt="...">
+    <h4 id="like"><i style="position: relative; left:10px; top: -160px; color:white;" onmouseover="this.style.visibility='visible';" onmouseout="this.style.visibility='hidden';" class="fas fa-heart"> {{post.like_users.count}}</i></h4>
+  </button>
+  <div class="card-body">
+    <h5 class="card-title"></h5>
+    <p class="card-text">{{post|hashtag_link|safe}}</p>
+    <!-- safe옵션: <a></a>문자를 실제링크로 바꿔준다. -->
+    <!-- hashtag_link(post)와 동일 -->
+  </div>
+</div>
+
+<div class="modal fade bd-example-modal-lg{{post.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="row">
+        <div class="col-6">
+          <div class="modal-body">
+            <img src="{{post.image.url}}" id="exampleModalCenterTitle" style="width:400px;">
+          </div>
+        </div>
+        <div class="col-5 ml-4">
+          <div class="modal-header">
+            <p class="modal-title" id="exampleModalCenterTitle" style="font-weight:500;">{{post.user}} <a href="{% url 'accounts:follow' post.user.id %}"> 팔로우</a></p>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body pb-0">
+            <span style="font-weight:500;">{{post.user}} </span>{{post.content}}
+            <p class="card-text my-3">{{post|hashtag_link|safe}}</p>
+            <div class="d-flex justify-content-end">
+              <button type="button" class="btn btn-secondary btn-sm mr-2" data-dismiss="modal">수정</button>
+              {% if user.is_authenticated %}
+                {% if user == post.user %}
+                  <a class="btn btn-danger btn-sm" href="{% url 'posts:delete' post.id %}">삭제</a>
+                {% endif %}
+              {% endif %}
+            </div>
+            <hr>
+            {% if user.is_authenticated %}
+              {% if user in post.like_users.all %}
+                <a href="{% url 'posts:like' post.id %}"><h5><i class="fas fa-heart" style="color:red;"></i> &nbsp;<i class="far fa-comment" style="color:black;"></i></h5></a>
+                <p style="font-weight:600;">좋아요 {{post.like_users.count}}개</p>
+              {% else %}
+                <a href="{% url 'posts:like' post.id %}"><h5><i class="far fa-heart" style="color:red;"></i> &nbsp;<i class="far fa-comment" style="color:black;"></i></h5></a>
+                <p style="font-weight:600;">좋아요 {{post.like_users.count}}개</p>
+              {% endif %}
+            {% endif %}
+            <p class="text-muted">{{post.created_at|date:'y-m-d h:m:s'}}</p>
+          </div>
+          <div class="modal-footer">
+          </div>
+          <form action="{% url 'posts:comment_create' post.id %}" method="post">
+            {% csrf_token %}
+            <div class="d-flex">
+              <input type="text" class="form-control mr-2" name="content">
+              <input class="btn btn-primary" type="submit">
+            </div>
+          </form>
+          {% for comment in post.comment_set.all %}
+            <p>{{comment.user}} {{comment.content}}</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  $('.bd-example-modal-lg').modal(options)
+</script>
