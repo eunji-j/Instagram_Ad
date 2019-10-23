@@ -42,3 +42,16 @@ def user_page(request, id):
         'user_info': user_info
     }
     return render(request, 'accounts/user_page.html', context)
+
+def follow(request, id):
+    you = get_object_or_404(User, id=id)
+    me = request.user
+    # 내가 나를 팔로우할 수 없도록
+    if you != me:
+        if you in me.followings.all():
+            me.followings.remove(you)
+            # you.followers.remove(me)
+        else:
+            me.followings.add(you)
+            # you.followers.add(me)
+    return redirect('accounts:user_page', id)
