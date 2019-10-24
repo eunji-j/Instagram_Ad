@@ -5,14 +5,11 @@
 <div class="card m-3" style="border: 0px; width: 30%;">
   <button style="position: relative;" type="button" class="btn" data-toggle="modal" data-target=".bd-example-modal-lg{{post.id}}">
     <img id="post" class="img-responsive" src="{{post.image.url}}" class="card-img-top" onmouseover="this.style.opacity='0.4';" onmouseout="this.style.opacity='1'" alt="...">
-    <h4 id="like"><i style="position: relative; left:10px; top: -160px; color:white;" class="fas fa-heart"> {{post.like_users.count}}</i></h4>
+    <h4 id="like"><i style="position: relative; top: -160px; color:white;" class="fas fa-heart"> {{post.like_users.count}}</i></h4>
   </button>
-  <div class="card-body">
-    <h5 class="card-title"></h5>
-    <p class="card-text">{{post|hashtag_link|safe}}</p>
-    <!-- hashtag_link(post)와 동일 -->
-    <!-- safe옵션: <a></a>문자를 실제링크로 바꿔준다. -->
-  </div>
+  <!-- <p class="card-text">{{post|hashtag_link|safe}}</p> -->
+  <!-- hashtag_link(post)와 동일 -->
+  <!-- safe옵션: <a></a>문자를 실제링크로 바꿔준다. -->
 </div>
 
 <div class="modal fade bd-example-modal-lg{{post.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
@@ -25,15 +22,15 @@
           </div>
         </div>
         <div class="col-5 ml-4">
-          <div class="modal-header" style="font-weight:500;">
-            <p class="modal-title" id="exampleModalCenterTitle">{{post.user}} •<a style="text-decoration: none;" href="{% url 'accounts:follow' post.user.id %}"> 팔로우</a></p>
+          <div class="modal-header" style="font-weight:1000;">
+            <p class="modal-title" id="exampleModalCenterTitle" >{{post.user}} •<a style="text-decoration: none;" href="{% url 'accounts:follow' post.user.id %}"> 팔로우</a></p>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body pb-0">
             <div style="height: 200px;">
-              <span style="font-weight:500;">{{post.user}} </span>{{post.content}}
+              <span style="font-weight:1000;">{{post.user}} </span>{{post.content}}
               <p class="card-text my-3">{{post|hashtag_link|safe}}</p>
               <p class="text-muted">{{post.created_at|date:'y-m-d h:m:s'}}</p>
               
@@ -50,7 +47,8 @@
               </div>
             </div>
             {% for comment in post.comment_set.all %}
-              <p><span style="font-weight:500;">{{comment.user}}</span> <span>{{comment.content}}</span></p>
+              <p class="m-0"><span style="font-weight:500;">{{comment.user}}</span> <span>{{comment.content}}</span></p>
+              <p class="text-muted">{{comment.created_at|date:'y-m-d h:m:s'}}</p>
             {% endfor %}
             <hr>
             {% if user.is_authenticated %}

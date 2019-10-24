@@ -93,8 +93,12 @@ def delete(request, id):
 
 @login_required
 def comment_create(request, id):
+    post = get_object_or_404(Post, id=id)
     if request.method == 'POST':
         form = CommentForm(request.POST)
         if form.is_valid():
-            form.save()
+            comment = form.save(commit=False)
+            comment.user = request.user
+            comment.post = post
+            comment.save()
     return redirect('posts:index')
