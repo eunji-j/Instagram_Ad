@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,23 +10,25 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 <body>
-  <nav class="navbar navbar-light bg-light">
-    <a class="navbar-brand" href="{% url 'posts:index' %}">Navbar</a>
+  <nav class="navbar navbar-light bg-light px-5">
+    <a class="navbar-brand" href="{% url 'posts:index' %}"><h4 class="d-inline"><i class="fab fa-instagram"></i></h4> | Instagram</a>
     <form class="form-inline">
-      <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+      <input class="form-control mr-sm-2 text-center" type="search" placeholder="검색" aria-label="Search">
     </form>
     {% if user.is_authenticated %}
       <div>
         <span><a href="{% url 'accounts:user_page' user.id %}">{{ user.username }}</a></span>
+        <a href="{% url 'posts:create' %}" class="btn btn-primary mx-2">글쓰기</a>
         <a href="{% url 'accounts:logout' %}">로그아웃</a>
       </div>
     {% else %}
-      <a href="{% url 'accounts:signup' %}">회원가입</a>
-      <a href="{% url 'accounts:login' %}">로그인</a>
+      <div>
+        <a class="btn btn-primary mr-2" href="{% url 'accounts:login' %}">로그인</a>
+        <a href="{% url 'accounts:signup' %}">가입하기</a>
+      </div>
     {% endif %}
   </nav>
-  <div class="container">
+  <div class="container mt-3">
     {% block body %}
     {% endblock %}
   </div>

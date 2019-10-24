@@ -1,14 +1,24 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import PostForm
+from .forms import PostForm, CommentForm
 from .models import HashTag, Post, Comment
 from django.contrib.auth.decorators import login_required
-
+from django.core.paginator import Paginator
 
 # Create your views here.
+
+
 def index(request):
     posts = Post.objects.all()
+    # 한페이지에 몇개를 보여줄지
+    paginator = Paginator(posts, 5) 
+
+    page = request.GET.get('page')
+    posts = paginator.get_page(page)
+
+    comment_form = CommentForm()
     context = {
-        'posts': posts
+        'posts': posts,
+        'comment_form': comment_form,
     }
     return render(request, 'posts/index.html', context)
 
@@ -56,6 +66,26 @@ def like(request, id):
     return redirect(request.GET.get('next') or 'posts:index')
 
 @login_required
+def update(request, id):
+    post = get_object_or_404(Post, id=id)
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES, instance=post)
+        if form.is_valid():
+            post = form.save()
+            post.hashtags.clear()
+            for word in post.content.split():
+                if word.startswith('#'):
+                    hashtag = HashTag.objects.get_or_create(content=word)[0]
+                    post.hashtags.add(hashtag)
+            return redirect('posts:index')
+    else:
+        form = PostForm(instance=post)
+    context = {
+        'form': form
+    }
+    return render(request, 'posts/form.html', context)
+
+@login_required
 def delete(request, id):
     post = get_object_or_404(Post, id=id)
     post.delete()
@@ -64,8 +94,7 @@ def delete(request, id):
 @login_required
 def comment_create(request, id):
     if request.method == 'POST':
-        content = request.POST.get('content')
-        post = get_object_or_404(Post, id=id)
-        user = request.user
-        Comment.objects.create(user=user, post=post, content=content)
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            form.save()
     return redirect('posts:index')

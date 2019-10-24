@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm, PasswordChangeForm
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
-from .forms import CustomUserCreationForm
+from django.contrib.auth import update_session_auth_hash
+from .forms import CustomUserCreationForm, CustomUserChangeForm
 from .models import User
 
 # Create your views here.
@@ -55,3 +56,47 @@ def follow(request, id):
             me.followings.add(you)
             # you.followers.add(me)
     return redirect('accounts:user_page', id)
+
+def delete(request, id):
+    user_info = get_object_or_404(User, id=id)
+    user = request.user
+    # 로그인한 유저인 경우(조건이 없어도 되지만 확인차 작성)
+    if user == user_info:
+        user.delete()
+    return redirect('posts:index')
+
+def update(request):
+    if request.method == "POST":
+        form = CustomUserChangeForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('posts:index')
+    else:
+        form = CustomUserChangeForm(instance=request.user)
+    context = {
+        'form': form
+    }
+    return render(request, 'accounts/form.html', context)
+
+def password(request):
+    if request.method == "POST":
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            # 비밀번호 변경 후 로그인 유지
+            update_session_auth_hash(request, user)
+            return redirect('posts:index')
+    else:
+        form = PasswordChangeForm(request.user)
+    context = {
+        'form': form
+    }
+    return render(request, 'accounts/form.html', context)
+
+# allauth로 로그인후 돌아가는 경로
+def profile(request):
+    user_info = request.user
+    context = {
+        'user_info': user_info
+    }
+    return render(request, 'accounts/user_page.html', context)

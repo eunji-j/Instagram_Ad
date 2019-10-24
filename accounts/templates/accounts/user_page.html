@@ -1,14 +1,35 @@
 {% extends 'base.html' %}
 {% block body %}
   <!-- 아래의 시스템user와 충돌을 피하기 위해 이름을 변경한다.(user -> user_info) -->
-  <h1 class="mt-5 d-flex">{{user_info.username}}</h1>
+  <div class="mt-5">
+    <h1 class="m-5 d-inline">{{user_info.username}}</h1>
+    <a class="btn btn-outline-secondary mx-2" href="{% url 'accounts:update' %}">정보수정</a>
+    <a href="{% url 'accounts:password' %}" class="d-inline"><h4 class="d-inline"><i class="fas fa-cog" style="color: black;"></i></h4></a>
+  </div>
   <!-- 로그인한 사용자에게만 보여주고, 내가 나를 팔로우하지 못하게 한다.  -->
+  
+  <div class="mx-5 my-2">
+    <span class="mr-3">게시물 {{user_info.posts.all | length}}</span>
+    <span class="mr-3">팔로워 {{user_info.followers.all | length}}</span>
+    <span>팔로잉 {{user_info.followings.count}}</span>
+  </div>
   {% if user.is_authenticated and user != user_info %}
     <a class="btn btn-primary d-flex" href="{% url 'accounts:follow' user_info.id %}">팔로우</a>
+  {% else %}
+    <a href="{% url 'accounts:delete' user_info.id %}">회원탈퇴</a>
+    <form action="{% url 'accounts:delete' user_info.id %}" method="post">
+      {% csrf_token %}
+      <input type="submit" value="탈퇴">
+    </form>
   {% endif %}
-  <br>
-  <span class="mr-3">게시물 {{user_info.posts.all | length}}</span>
-  <span>팔로워 {{user_info.followers.all | length}}</span>
-  <span>팔로잉 {{user_info.followings.all | length}}</span>
-  
+
+  {% for post in user.posts.all %}
+  <div class="card m-3" style="border: 0px; width: 30%;">
+    <button style="position: relative;" type="button" class="btn" data-toggle="modal" data-target=".bd-example-modal-lg{{post.id}}">
+      <img id="post" class="img-responsive" src="{{post.image.url}}" class="card-img-top" onmouseover="this.style.opacity='0.4';" onmouseout="this.style.opacity='1'" alt="...">
+      <h4 id="like"><i style="position: relative; left:10px; top: -160px; color:white;" class="fas fa-heart"> {{post.like_users.count}}</i></h4>
+    </button>
+  </div>
+  {% endfor %}
+
 {% endblock %}
