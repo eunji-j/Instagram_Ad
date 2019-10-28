@@ -10,7 +10,7 @@ from django.core.paginator import Paginator
 def index(request):
     posts = Post.objects.all()
     # 한페이지에 몇개를 보여줄지
-    paginator = Paginator(posts, 5) 
+    paginator = Paginator(posts, 9) 
 
     page = request.GET.get('page')
     posts = paginator.get_page(page)
@@ -21,6 +21,15 @@ def index(request):
         'comment_form': comment_form,
     }
     return render(request, 'posts/index.html', context)
+
+def detail(request, id):
+    post = get_object_or_404(Post, id=id)
+    comment_form = CommentForm()
+    context = {
+        'post': post,
+        'comment_form': comment_form,
+    }
+    return render(request, 'posts/detail.html', context)
 
 @login_required
 def create(request):
@@ -49,9 +58,15 @@ def create(request):
 
 def hashtags(request, id):
     hashtag = get_object_or_404(HashTag, id=id)
-    posts = hashtag.taged_post.all
+    posts = hashtag.taged_post.all()
+    # 한페이지에 몇개를 보여줄지
+    paginator = Paginator(posts, 9)
+    page = request.GET.get('page')
+    posts = paginator.get_page(page)
+    comment_form = CommentForm()
     context = {
-        'posts': posts
+        'posts': posts,
+        'comment_form': comment_form,
     }
     return render(request, 'posts/index.html', context)
 
@@ -63,7 +78,7 @@ def like(request, id):
         post.like_users.remove(user)
     else:
         post.like_users.add(user)
-    return redirect(request.GET.get('next') or 'posts:index')
+    return redirect(request.GET.get('next') or 'posts:detail', id)
 
 @login_required
 def update(request, id):
@@ -77,7 +92,7 @@ def update(request, id):
                 if word.startswith('#'):
                     hashtag = HashTag.objects.get_or_create(content=word)[0]
                     post.hashtags.add(hashtag)
-            return redirect('posts:index')
+            return redirect('posts:detail', id)
     else:
         form = PostForm(instance=post)
     context = {
@@ -101,19 +116,19 @@ def comment_create(request, id):
             comment.user = request.user
             comment.post = post
             comment.save()
-    return redirect('posts:index')
+    return redirect('posts:detail', id)
 
 @login_required
 def comment_delete(request, post_id, comment_id):
     comment = get_object_or_404(Comment, id=comment_id)
     comment.delete()
-    return redirect('posts:index')
+    return redirect('posts:detail', id)
 
 def search(request):
     keyword = request.GET.get('keyword')
     posts = Post.objects.filter(content__icontains=keyword)
     # 한페이지에 몇개를 보여줄지
-    paginator = Paginator(posts, 5) 
+    paginator = Paginator(posts, 9) 
 
     page = request.GET.get('page')
     posts = paginator.get_page(page)
