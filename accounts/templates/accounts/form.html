@@ -9,26 +9,34 @@
       <form action="" method="post">
         {% csrf_token %}
         {% bootstrap_form form %}
-        <input class="btn btn-primary btn-block" type="submit" value="로그인">
+        {% if request.resolver_match.url_name == "login" %}
+          <input class="btn btn-primary btn-block mt-5" type="submit" value="로그인">
+          <hr>
+          <p class="text-muted text-center" style="font-size:10pt;">또는</p>
+          <div class="text-center">
+            <a href="{% provider_login_url 'kakao' %}"><img src="{% static 'kakao.png' %}"></a>
+          </div>
+        {% else %}
+          <input class="btn btn-primary btn-block" type="submit" value="제출하기">
+        {% endif %}
       </form>
-      <hr>
-      <p class="text-muted text-center">또는</p>
-      <div class="text-center">
-        <a href="{% provider_login_url 'kakao' %}"><img src="{% static 'kakao.png' %}"></a>
-      </div>
     </div>
   </div>
-  <div class="card" style="margin: 0px 300px;">
-    <!-- 경로이름에 따라 제목 다르게 설정하는 법 -->
+  <!-- 경로이름에 따라 제목 다르게 설정하는 법 -->
+  <div class="card" style="margin: 0px 300px; height:70px;">
     {% if request.resolver_match.url_name == "login" %}
       <div class="card-body d-flex justify-content-center">
         <p class="card-text">계정이 없으신가요?</p>
         <a href="{% url 'accounts:signup' %}" class="card-link">가입하기</a>
       </div>
-    {% else %}
+    {% elif request.resolver_match.url_name == "signup" %}
       <div class="card-body d-flex justify-content-center">
         <p class="card-text">계정이 있으신가요?</p>
         <a href="{% url 'accounts:login' %}" class="card-link">로그인</a>
+      </div>
+    {% else %}
+      <div class="card-body d-flex justify-content-center">
+        <a href="{% url 'accounts:password' %}" class="card-link">비밀번호 변경</a>
       </div>
     {% endif %}
   </div>

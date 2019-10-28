@@ -14,7 +14,7 @@ class Post(models.Model):
     image = ProcessedImageField(
                 # null=True, # 필드값 유효성검사할 때 빈값도 가능
                 # blank=True, # 모델폼 입력할 때 빈값도 가능
-                processors=[ResizeToFill(300,300)], # 비율이 안깨지게(리스트형태)
+                processors=[ResizeToFill(250,250)], # 비율이 안깨지게(리스트형태)
                 format='JPEG',
                 options={'quality':90}, # 생략해도 상관없음
                 upload_to='media' # 경로

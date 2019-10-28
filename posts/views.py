@@ -102,3 +102,25 @@ def comment_create(request, id):
             comment.post = post
             comment.save()
     return redirect('posts:index')
+
+@login_required
+def comment_delete(request, post_id, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    comment.delete()
+    return redirect('posts:index')
+
+def search(request):
+    keyword = request.GET.get('keyword')
+    posts = Post.objects.filter(content__icontains=keyword)
+    # 한페이지에 몇개를 보여줄지
+    paginator = Paginator(posts, 5) 
+
+    page = request.GET.get('page')
+    posts = paginator.get_page(page)
+
+    comment_form = CommentForm()
+    context = {
+        'posts': posts,
+        'comment_form': comment_form,
+    }
+    return render(request, 'posts/index.html', context)
