@@ -3,6 +3,7 @@ from .forms import PostForm, CommentForm
 from .models import HashTag, Post, Comment
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.http import JsonResponse # 비동기응답
 
 # Create your views here.
 
@@ -72,13 +73,24 @@ def hashtags(request, id):
 
 @login_required
 def like(request, id):
-    post = get_object_or_404(Post, id=id)
-    user = request.user
-    if user in post.like_users.all():
-        post.like_users.remove(user)
+    if request.is_ajax():
+        post = get_object_or_404(Post, id=id)
+        user = request.user
+        if user in post.like_users.all():
+            post.like_users.remove(user)
+            is_like = True
+        else:
+            post.like_users.add(user)
+            is_like = False
+        
+        context = {
+            'is_like': is_like,
+            'likes_cnt': post.like_users.all().count()
+        }
+        return JsonResponse(context)
+        # return redirect(request.GET.get('next') or 'posts:detail', id)
     else:
-        post.like_users.add(user)
-    return redirect(request.GET.get('next') or 'posts:detail', id)
+        return JsonResponse({'message': '잘못된 요청입니다.'})
 
 @login_required
 def update(request, id):
